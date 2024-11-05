@@ -3,45 +3,35 @@ const container = document.getElementById('character-container');
 async function fetchCharacters() {
     try {
         const response = await fetch('https://rickandmortyapi.com/api/character/?page=19');
-        const data = await response.json();
-        displayCharacters(data.results);
+        const { results: characters } = await response.json();
+        characters.forEach(character => container.appendChild(createCharacterCard(character)));
     } catch (error) {
         console.error('Erro ao buscar dados:', error);
     }
 }
 
-function displayCharacters(characters) {
-    characters.forEach(character => {
-        const characterCard = document.createElement('div');
-        characterCard.classList.add('character-card');
+function translateStatus(status) {
+    return { 'Alive': 'Vivo', 'Dead': 'Morto', 'unknown': 'Desconhecido' }[status] || status;
+}
 
-        const characterImage = document.createElement('img');
-        characterImage.src = character.image;
-        characterImage.alt = character.name;
-        characterImage.classList.add('character-image');
+function createCharacterCard(character) {
+    const characterCard = document.createElement('div');
+    characterCard.classList.add('character-card');
 
-        const characterDetails = document.createElement('div');
-        characterDetails.classList.add('character-details');
-
-        const characterName = document.createElement('h2');
-        characterName.classList.add('character-name');
-        characterName.textContent = character.name;
-
-        const characterInfo = document.createElement('p');
-        characterInfo.classList.add('character-info');
-        characterInfo.innerHTML = `
-            <strong>Status:</strong> ${character.status} <br>
-            <strong>Espécie:</strong> ${character.species}${character.type ? ` (${character.type})` : ''} <br>
-            <strong>Origem:</strong> ${character.origin.name} <br>
-            <strong>Localização:</strong> ${character.location.name}
-        `;
-
-        characterDetails.appendChild(characterName);
-        characterDetails.appendChild(characterInfo);
-        characterCard.appendChild(characterImage);
-        characterCard.appendChild(characterDetails);
-        container.appendChild(characterCard);
-    });
+    characterCard.innerHTML = `
+        <img src="${character.image}" alt="${character.name}" class="character-image">
+        <div class="character-details">
+            <h2 class="character-name">${character.name}</h2>
+            <p class="character-info">
+                <strong>Status:</strong> ${translateStatus(character.status)} <br>
+                <strong>Espécie:</strong> ${character.species}${character.type ? ` (${character.type})` : ''} <br>
+                <strong>Origem:</strong> ${character.origin.name} <br>
+                <strong>Localização Atual:</strong> ${character.location.name}
+            </p>
+        </div>
+    `;
+    
+    return characterCard;
 }
 
 fetchCharacters();
